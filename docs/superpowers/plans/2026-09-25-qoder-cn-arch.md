@@ -49,5 +49,5 @@
 - 创建：`docs/superpowers/specs/2026-09-25-qoder-cn-arch-design.md`
 
 - [x] 记录下载、校验、安装、卸载和自动更新方式。
-- [ ] 在本地使用真实 deb 完成一次完整构建验证。
-- [ ] 推送后检查 GitHub Actions 首次运行结果。
+- [x] 在本地使用真实 deb 完成一次完整构建验证。
+- [x] 推送后检查 GitHub Actions 首次运行结果。

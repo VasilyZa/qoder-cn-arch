@@ -48,19 +48,36 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag='${{ steps.metadata.outputs.tag }}'
+          package_path=(dist/*.pkg.tar.*)
+          checksum_path=(dist/*.sha256)
+          package_asset="$(basename "${package_path[0]}")"
+          checksum_asset="$(basename "${checksum_path[0]}")"
+
+          upload_with_retry() {
+            local path="$1"
+            local attempt
+            for attempt in 1 2 3 4 5; do
+              if gh release upload "$tag" "$path" --clobber; then
+                return 0
+              fi
+              echo "Upload attempt $attempt for $(basename "$path") failed; retrying."
+              sleep 10
+            done
+            return 1
+          }
+
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Release $tag already exists; nothing to publish."
+            assets="$(gh release view "$tag" --json assets --jq '.assets[].name')"
+            if ! grep -Fxq "$package_asset" <<<"$assets"; then
+              upload_with_retry "${package_path[0]}"
+            fi
+            if ! grep -Fxq "$checksum_asset" <<<"$assets"; then
+              upload_with_retry "${checksum_path[0]}"
+            fi
+            echo "Release $tag already exists; verified its assets."
             exit 0
           fi
-          gh release create "$tag" dist/*.pkg.tar.* \
+          gh release create "$tag" "${package_path[0]}" \
             --title "Qoder CN ${{ steps.metadata.outputs.UPSTREAM_VERSION }}" \
             --notes '${{ steps.metadata.outputs.notes }}'
-
-          for attempt in 1 2 3 4 5; do
-            if gh release upload "$tag" dist/*.sha256 --clobber; then
-              exit 0
-            fi
-            echo "Checksum upload attempt $attempt failed; retrying."
-            sleep 10
-          done
-          exit 1
+          upload_with_retry "${checksum_path[0]}"
