@@ -61,8 +61,8 @@ if [[ -z "$package_path" ]]; then
   exit 1
 fi
 
-cp "$package_path" "$output_dir/"
-package_file="$output_dir/$(basename "$package_path")"
+package_file="$output_dir/qoder-cn-${pkgver}-1-x86_64.pkg.tar.zst"
+cp "$package_path" "$package_file"
 sha256sum "$package_file" > "$package_file.sha256"
 cat > "$output_dir/version.env" <<EOF
 UPSTREAM_VERSION=$raw_version
