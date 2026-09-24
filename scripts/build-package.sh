@@ -42,7 +42,7 @@ cp "$repo_root/qoder-cn.install" "$package_dir/qoder-cn.install"
 cp "$deb_path" "$package_dir/qoder-cn.deb"
 
 build_as_builder() {
-  (cd "$package_dir" && makepkg --clean --force --noconfirm)
+  (cd "$package_dir" && makepkg --nodeps --clean --force --noconfirm)
 }
 
 if [[ "$EUID" -eq 0 ]]; then
@@ -50,7 +50,7 @@ if [[ "$EUID" -eq 0 ]]; then
     useradd --create-home --uid 1000 qoder-builder
   fi
   chown -R qoder-builder:qoder-builder "$work_root" "$output_dir"
-  runuser -u qoder-builder -- env HOME=/home/qoder-builder bash -c "cd '$package_dir' && makepkg --clean --force --noconfirm"
+  runuser -u qoder-builder -- env HOME=/home/qoder-builder bash -c "cd '$package_dir' && makepkg --nodeps --clean --force --noconfirm"
 else
   build_as_builder
 fi
