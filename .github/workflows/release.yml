@@ -52,6 +52,15 @@ jobs:
             echo "Release $tag already exists; nothing to publish."
             exit 0
           fi
-          gh release create "$tag" dist/*.pkg.tar.* dist/*.sha256 \
+          gh release create "$tag" dist/*.pkg.tar.* \
             --title "Qoder CN ${{ steps.metadata.outputs.UPSTREAM_VERSION }}" \
             --notes '${{ steps.metadata.outputs.notes }}'
+
+          for attempt in 1 2 3 4 5; do
+            if gh release upload "$tag" dist/*.sha256 --clobber; then
+              exit 0
+            fi
+            echo "Checksum upload attempt $attempt failed; retrying."
+            sleep 10
+          done
+          exit 1
