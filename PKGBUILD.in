@@ -1,0 +1,27 @@
+pkgname=qoder-cn
+pkgver=@PKGVER@
+pkgrel=1
+epoch=@EPOCH@
+pkgdesc='Qoder - Agent workbench for human and AI software teams'
+arch=('x86_64')
+url='https://qoder.com'
+license=('LicenseRef-Qoder')
+depends=('gtk3' 'libnotify' 'nss' 'libxss' 'libxtst' 'xdg-utils' 'at-spi2-core' 'util-linux-libs' 'libsecret')
+optdepends=('libappindicator-gtk3: system tray indicator support')
+install=qoder-cn.install
+source=('qoder-cn.deb')
+sha256sums=('@SHA256@')
+
+package() {
+  local control_member
+  control_member="$(ar t "$srcdir/qoder-cn.deb" | awk '/^data\.tar\./ { print; exit }')"
+  case "$control_member" in
+    *.xz) ar p "$srcdir/qoder-cn.deb" "$control_member" | tar -xJf - -C "$pkgdir" ;;
+    *.gz) ar p "$srcdir/qoder-cn.deb" "$control_member" | tar -xzf - -C "$pkgdir" ;;
+    *.zst) ar p "$srcdir/qoder-cn.deb" "$control_member" | tar --zstd -xf - -C "$pkgdir" ;;
+    *) printf 'unsupported data archive: %s\n' "$control_member" >&2; return 1 ;;
+  esac
+
+  install -d "$pkgdir/usr/bin"
+  ln -s '/opt/Qoder CN/qoder-cn' "$pkgdir/usr/bin/qoder-cn"
+}
